@@ -1,0 +1,10 @@
+{
+  "name": "dana-bantuan-form",
+  "version": "1.0.0",
+  "description": "Formulir penerimaan bantuan DANA",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {}
+}
