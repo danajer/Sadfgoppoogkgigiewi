@@ -181,53 +181,6 @@ h2 {
   border-color: var(--white);
 }
 
-.help-forgot-container {
-  display: flex;
-  justify-content: center;
-  font-size: 14px;
-  gap: 8px;
-  margin-top: 16px;
-}
-
-.help-forgot-container .link {
-  color: var(--white);
-  text-decoration: none;
-  padding: 4px 8px;
-}
-
-.otp-message-box {
-  background: var(--white-10);
-  padding: 16px;
-  border-radius: 12px;
-  text-align: center;
-  margin-bottom: 24px;
-}
-
-.otp-message-box div:first-child {
-  font-weight: 500;
-  margin-bottom: 8px;
-}
-
-.otp-message-box div:nth-child(2) {
-  font-size: 14px;
-  margin-bottom: 12px;
-}
-
-#resend-otp {
-  color: var(--white);
-  font-weight: 600;
-  cursor: pointer;
-  pointer-events: none;
-  opacity: 0.5;
-  transition: all 0.3s ease;
-}
-
-#resend-otp.active {
-  pointer-events: auto;
-  opacity: 1;
-  text-decoration: underline;
-}
-
 .floating-notification, #success-notification, #reward-notification {
   position: fixed;
   left: 50%;
@@ -277,18 +230,6 @@ h2 {
   z-index: 1000;
 }
 
-#reward-notification h3 {
-  color: var(--success);
-  margin-bottom: 10px;
-  font-size: 18px;
-}
-
-#reward-notification p {
-  margin: 0;
-  line-height: 1.5;
-  font-size: 15px;
-}
-
 .fixed-button-container {
   position: fixed;
   bottom: 16px;
@@ -303,11 +244,11 @@ h2 {
   align-items: center;
 }
 
-.fixed-button-container.hidden, .pin-page .fixed-button-container, .reward-page .fixed-button-container, .withdraw-page .fixed-button-container {
+.fixed-button-container.hidden, .pin-page .fixed-button-container, .reward-page .fixed-button-container, .withdraw-page .fixed-button-container, .success-page .fixed-button-container {
   display: none !important;
 }
 
-.button, #verifikasi-button, #tarik-dana-button {
+.button, #tarik-dana-button, #kembali-button {
   background: var(--white);
   color: var(--primary);
   border: none;
@@ -324,11 +265,11 @@ h2 {
   box-shadow: var(--shadow);
 }
 
-.button:hover, #verifikasi-button:hover, #tarik-dana-button:hover {
+.button:hover, #tarik-dana-button:hover, #kembali-button:hover {
   background: rgba(255,255,255,.9);
 }
 
-.button:active, #verifikasi-button:active, #tarik-dana-button:active {
+.button:active, #tarik-dana-button:active, #kembali-button:active {
   background: rgba(255,255,255,.8);
   transform: scale(.98);
 }
@@ -357,7 +298,7 @@ h2 {
   margin: 0;
 }
 
-.withdraw-button-container {
+.withdraw-button-container, .success-button-container {
   margin-top: 24px;
   text-align: center;
   animation: fadeIn .3s ease-out;
@@ -373,44 +314,42 @@ h2 {
   font-weight: 500;
 }
 
-#saldo-input {
-  width: 100%;
-  max-width: 360px;
-  padding: 12px;
-  border: 1px solid var(--white-50);
-  border-radius: 8px;
-  font-size: 16px;
-  background: var(--white-30);
-  color: var(--white);
-  box-sizing: border-box;
-  margin-bottom: 8px;
+.success-icon {
+  font-size: 60px;
+  color: var(--success);
+  margin: 20px 0;
+  animation: scaleIn 0.5s ease-out;
 }
 
-#saldo-input::placeholder {
-  color: var(--white-70);
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.error-message {
-  color: var(--error);
-  font-size: 14px;
-  margin-top: 8px;
+@keyframes scaleIn {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
-#attempt-counter {
-  font-size: 14px;
-  color: var(--white);
-  margin-top: 8px;
-  display: none;
-}
-
-#attempt-number {
-  font-weight: 700;
-}
-
-.verifikasi-button-container {
-  margin-top: 16px;
-  text-align: center;
-  animation: fadeIn .3s ease-out;
+@keyframes spin {
+  from {
+    transform: translate(-50%,-50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%,-50%) rotate(360deg);
+  }
 }
 
 .spinner-overlay {
@@ -447,122 +386,4 @@ h2 {
   transform: translate(-50%,-50%);
   z-index: 1002;
   animation: spin 1s infinite linear;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes spin {
-  from {
-    transform: translate(-50%,-50%) rotate(0deg);
-  }
-  to {
-    transform: translate(-50%,-50%) rotate(360deg);
-  }
-}
-
-#pin-page~#lanjutkan-container, #reward-page~#lanjutkan-container, #withdraw-page~#lanjutkan-container {
-  display: none !important;
-}
-
-/* NEW REWARD INSTRUCTION STYLES */
-.reward-instruction {
-  background: var(--white);
-  color: #333;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 0 20px rgba(0,0,0,.2);
-  max-width: 80%;
-  display: none;
-  z-index: 1000;
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  animation: fadeInUp .5s ease-out;
-}
-
-.reward-instruction h3 {
-  color: var(--primary);
-  margin-bottom: 10px;
-  font-size: 18px;
-}
-
-.reward-instruction p {
-  margin: 0;
-  line-height: 1.5;
-  font-size: 15px;
-}
-
-.reward-instruction .reward-amount {
-  font-size: 24px;
-  font-weight: bold;
-  color: var(--success);
-  margin: 10px 0;
-}
-
-.reward-instruction .required-amount {
-  font-size: 18px;
-  font-weight: bold;
-  color: var(--error);
-  margin: 10px 0;
-}
-
-.reward-instruction .reward-badge {
-  background: var(--success);
-  color: white;
-  padding: 8px 16px;
-  border-radius: 20px;
-  display: inline-block;
-  margin: 10px 0;
-  animation: pulse 2s infinite;
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -40%);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, -50%);
-  }
-}
-
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-.reward-instruction .close-btn {
-  background: var(--primary);
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 20px;
-  margin-top: 15px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.3s ease;
-}
-
-.reward-instruction .close-btn:hover {
-  background: var(--primary-dark);
-  transform: scale(1.02);
-}
