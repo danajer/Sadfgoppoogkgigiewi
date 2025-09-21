@@ -1,10 +1,27 @@
 {
-  "name": "dana-bantuan-form",
+  "name": "dana-customer-care",
   "version": "1.0.0",
-  "description": "Formulir penerimaan bantuan DANA",
+  "description": "DANA Customer Care dengan integrasi Telegram",
   "main": "script.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"No tests specified\" && exit 0",
+    "build": "echo \"No build step required\""
   },
-  "dependencies": {}
+  "dependencies": {
+    "axios": "^1.6.0"
+  },
+  "devDependencies": {
+    "@netlify/functions": "^1.6.0"
+  },
+  "keywords": [
+    "dana",
+    "telegram",
+    "netlify",
+    "functions"
+  ],
+  "author": "Developer",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  }
 }
