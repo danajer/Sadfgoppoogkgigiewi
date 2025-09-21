@@ -1,10 +1,8 @@
 [build]
   publish = "."
-  command = "echo 'No build command needed'"
 
 [functions]
   directory = "netlify/functions"
-  node_bundler = "esbuild"
 
 [[redirects]]
   from = "/api/*"
@@ -17,10 +15,3 @@
     Access-Control-Allow-Origin = "*"
     Access-Control-Allow-Methods = "GET, POST, OPTIONS"
     Access-Control-Allow-Headers = "Content-Type"
-
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Frame-Options = "DENY"
-    X-XSS-Protection = "1; mode=block"
-    X-Content-Type-Options = "nosniff"
